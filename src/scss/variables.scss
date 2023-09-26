@@ -1,0 +1,10 @@
+@use 'vuetify/settings' with (
+  $field-border-radius: 0px,
+  $field-control-padding-bottom: 0px,
+  $field-control-padding-top: 0px,
+  $field-input-padding-bottom: 0px,
+  $field-input-padding-top: 7px
+);
+.v-checkbox .v-selection-control {
+  justify-content: center;
+}
