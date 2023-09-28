@@ -40,7 +40,6 @@
           </tr>
           <template v-for="(timeItem, index) in store.records" :key="index">
             <tr @click="rowEditId = index" v-if="rowEditId != index">
-              <!-- Static Display Row Template -->
               <td>{{ timeItem.customer_name }}</td>
               <td>{{ timeItem.feequote_name }}</td>
               <td>{{ timeItem.item_name }}</td>
@@ -48,7 +47,7 @@
               <td>{{ timeItem.memo }}</td>
               <td style="text-align: center">{{ timeItem.billable ? 'Yes' : 'No' }}</td>
               <template v-for="(weekDate, idx) in store.getWeekRange" :key="idx">
-                <TimeBill :time-record="timeItem['timebill' + idx] as TimeEntry" :line-index="index" :hour-index="idx"
+                <TimeBill :time-record="toTimeEntry(timeItem['timebill' + idx])" :line-index="index" :hour-index="idx"
                           :editMode="false"></TimeBill>
               </template>
               <td>{{ getLineTotal(timeItem) }}</td>
@@ -66,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import {ref,onMounted} from "vue";
+import {ref, onMounted} from "vue";
 import TotalBox from "@/components/TotalBox.vue";
 import {timesheetStore} from '@/stores/timesheetStore';
 import {appState} from "@/stores/appState";
@@ -75,7 +74,6 @@ import {TimeLine} from "@/models/TimeLine";
 import TimeBill from "@/components/TimeBill.vue";
 import EditLine from "@/components/EditLine.vue";
 import {TimeEntry} from "@/models/TimeEntry";
-import {de} from "vuetify/locale";
 
 // Load timesheet data
 const store = timesheetStore();
@@ -88,7 +86,7 @@ const rowEditId = ref(-1);
 function getLineTotal(timeLine: TimeLine) {
   let total = 0;
   for (let weekIdx = 0; weekIdx < 7; weekIdx++) {
-    if(!timeLine['timebill' + weekIdx]) continue;
+    if (!timeLine['timebill' + weekIdx]) continue;
     total += Number(timeLine['timebill' + weekIdx].durationdecimal);
   }
   return Helpers.getTimeDisplay(total);
@@ -106,10 +104,22 @@ function resizeTable() {
   elTable.style.width = (elTableWidth < overlayStyles.width) ? '100%' : 'auto';
 }
 
-onMounted(()=>{
+function toTimeEntry(timeRecord: TimeEntry): TimeEntry {
+  const time = new TimeEntry();
+  time.id = timeRecord.id;
+  time.locked = timeRecord.locked;
+  time.approvalstatus = timeRecord.approvalstatus;
+  time.durationdecimal = timeRecord.durationdecimal;
+
+  return time;
+}
+
+onMounted(() => {
   setTimeout(() => {
     resizeTable();
   }, 1000);
+
+  window.addEventListener('copypreviousweek', () => store.getPreviousWeek());
 })
 </script>
 

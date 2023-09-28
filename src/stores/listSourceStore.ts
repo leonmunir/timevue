@@ -3,8 +3,8 @@ import {computed, ref, Ref} from "vue";
 import {Datasource} from "@/stores/Datasource";
 import {ListSource} from "@/models/ListSource";
 import {IFeequote} from "@/models/IFeequote";
-import {RecordRef} from "@/models/RecordRef";
 import {IGIATask} from "@/models/IGIATask";
+import {RecordRef} from "@/models/RecordRef";
 
 export const listSourceStore = defineStore('listSourceStore', () => {
   const feequotes: Ref<IFeequote[]> = ref([]);
@@ -22,8 +22,14 @@ export const listSourceStore = defineStore('listSourceStore', () => {
 
 
   const customers = computed(() => {
-    const companyList = feequotes.value.map(x => x.company);
-    return companyList;
+    const list: RecordRef[] = [];
+    feequotes.value.forEach(feequote => {
+      const foundCompany = list.find(x => x.id == feequote.company.id);
+      if(!foundCompany){
+        list.push(feequote.company);
+      }
+    })
+    return list;
   });
 
   return {customers, feequotes, getAll, giaTasks};

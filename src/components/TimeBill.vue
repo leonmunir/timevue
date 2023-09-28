@@ -74,8 +74,16 @@ function validateInput(event) {
   }
 }
 
+function convertTimeToFloat(timeDuration: number) {
+  if(timeDuration.toString().indexOf(':')> -1){
+    const parts = timeDuration.toString().split(':');
+    return Number(parts[0]) + Number(parts[1])/60
+  }
+  return timeDuration;
+}
+
 function emitData() {
-  updateEventData.durationdecimal = Number(durationdecimal.value);
+  updateEventData.durationdecimal = convertTimeToFloat(durationdecimal.value);
   if(props.hourIndex != undefined) {
     updateEventData.hourIndex = props.hourIndex;
   }

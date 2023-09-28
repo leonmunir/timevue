@@ -346,7 +346,6 @@ onMounted(() => {
   padding-right: 0;
   padding-top: 0;
 }
-
 .submitbutton {
   background: linear-gradient(180deg, rgba(75, 156, 254, 1) 35%, rgba(31, 128, 244, 1) 100%);
   border: thin solid #125AB2 !important;

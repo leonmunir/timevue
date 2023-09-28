@@ -13,8 +13,8 @@ export class Datasource {
     private static searchParams = new URLSearchParams('script=customscript_slweeklytimesheetservice&deploy=1');
 
     public static getListSourceUrl() {
-      const employeeId = typeof window.nlapiGetFieldValue === 'function' ?
-        window.nlapiGetFieldValue('employee') : '';
+      const employeeId = typeof window.parent.nlapiGetFieldValue === 'function' ?
+        window.parent.nlapiGetFieldValue('employee') : '';
 
         this.searchParams.set('employeeid', employeeId);
         this.searchParams.set('action', 'listsource');
@@ -22,11 +22,11 @@ export class Datasource {
     }
 
     public static getTimesheetDataUrl(strDate?: string) {
-      const employeeId = typeof window.nlapiGetFieldValue === 'function' ?
-        window.nlapiGetFieldValue('employee') : '';
+      const employeeId = typeof window.parent.nlapiGetFieldValue === 'function' ?
+        window.parent.nlapiGetFieldValue('employee') : '';
 
-      const weekDate = typeof window.nlapiGetFieldValue === 'function' ?
-        window.nlapiGetFieldValue('trandate') : '';
+      const weekDate = typeof window.parent.nlapiGetFieldValue === 'function' ?
+        window.parent.nlapiGetFieldValue('trandate') : '';
 
         this.searchParams.set('action', 'timesheet');
         this.searchParams.set('employeeid', employeeId);
@@ -38,10 +38,8 @@ export class Datasource {
     };
 
     public static updateHiddenJsonField(json: string): void {
-        window?.nlapiSetFieldValue('custpage_timesheetdata', json);
-    }
-
-    public getPreviousWeek(): string {
-        return '';
+      if(typeof window.parent.nlapiGetFieldValue === 'function'){
+        window.parent.nlapiSetFieldValue('custpage_timesheetdata', json);
+      }
     }
 }

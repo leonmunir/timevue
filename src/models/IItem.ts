@@ -1,6 +1,6 @@
-import {RecordRef} from "./RecordRef";
-
-export interface IItem extends RecordRef{
+export interface IItem{
     internalid: number
-    department_id: number
+    department_id: number,
+    id: number,
+    name: string
 }

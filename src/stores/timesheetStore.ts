@@ -21,7 +21,10 @@ export const timesheetStore = defineStore('timesheetStore', () => {
     fetch(Datasource.getTimesheetDataUrl()).then(function (response) {
       return response.json();
     }).then(function (objResponse: ITimesheetData) {
-      objResponse.message.timeitemList.forEach(timeline => records.value.push(timeline as ITimeLine));
+      objResponse.message.timeitemList.forEach(timeline => {
+        records.value.push(timeline)
+      });
+      Datasource.updateHiddenJsonField(JSON.stringify(records.value));
     });
   }
 
@@ -62,6 +65,7 @@ export const timesheetStore = defineStore('timesheetStore', () => {
 
     } else {
       const objTime = new TimeLine();
+      objTime.id = timeLine.id;
       objTime.customer_id = timeLine.customer.id;
       objTime.customer_name = timeLine.customer.name;
       objTime.feequote_id = timeLine.feeQuote.id;
@@ -79,10 +83,26 @@ export const timesheetStore = defineStore('timesheetStore', () => {
       }
       records.value.push(objTime);
     }
+
+    Datasource.updateHiddenJsonField(JSON.stringify(records.value));
   }
 
   function removeLine(lineId: number) {
     records.value = records.value.filter(x => x.id != lineId);
+    Datasource.updateHiddenJsonField(JSON.stringify(records.value));
+  }
+
+  function getPreviousWeek() {
+    const lastWeekStartDate = new Date(startDate.value.getTime());
+    lastWeekStartDate.setDate(lastWeekStartDate.getDate() - 7);
+    fetch(Datasource.getTimesheetDataUrl(window.nlapiDateToString(lastWeekStartDate))).then(function (response) {
+      return response.json();
+    }).then(function (objResponse) {
+      objResponse.message.timeitemList.forEach(timeline => {
+        records.value.push(timeline)
+      });
+      Datasource.updateHiddenJsonField(JSON.stringify(records.value));
+    });
   }
   //#endregion
 
@@ -154,6 +174,7 @@ export const timesheetStore = defineStore('timesheetStore', () => {
   return {
     records,
     getAll,
+    getPreviousWeek,
     getWeekRange,
     getBillableWeekTotal,
     getNonBillableWeekTotal,
