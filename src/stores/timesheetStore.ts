@@ -15,6 +15,10 @@ export const timesheetStore = defineStore('timesheetStore', () => {
 
   //#region Actions
   function getAll() {
+    const dateRange = Datasource.getWeekDateRange();
+    startDate.value = dateRange.startDate;
+    endDate.value = dateRange.endDate;
+
     if (records.value.length > 0) {
       return;
     }

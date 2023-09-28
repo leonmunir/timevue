@@ -6,6 +6,11 @@ declare global {
     }
 };
 
+class DateRange {
+  public startDate: Date = new Date();
+  public endDate: Date = new Date();
+}
+
 export class Datasource {
     // When developing locally use Mockoon app and copy-paste Suitelet data in Mockoon
     private static datasourceUrl = (window.location.href.includes('localhost')) ?
@@ -41,5 +46,21 @@ export class Datasource {
       if(typeof window.parent.nlapiGetFieldValue === 'function'){
         window.parent.nlapiSetFieldValue('custpage_timesheetdata', json);
       }
+    }
+
+  /**
+   * Get Week Date range from Suitelet Date field.
+   */
+  public static getWeekDateRange(): DateRange {
+      const range = new DateRange();
+
+      const dateParts: string[] = String(window.parent.nlapiGetFieldValue('trandate')).split('/');
+      range.startDate = new Date(Number(dateParts[2]), Number(dateParts[1]) - 1, Number(dateParts[0]));
+
+      const enddate = new Date(Number(dateParts[2]), Number(dateParts[1]) - 1, Number(dateParts[0]));
+      enddate.setDate(enddate.getDate() + 6);
+      range.endDate = enddate;
+
+      return range;
     }
 }
