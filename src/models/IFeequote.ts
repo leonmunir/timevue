@@ -5,6 +5,6 @@ export interface IFeequote extends RecordRef{
     company: RecordRef;
     department_id: number;
     rate: number;
-    isWipTaskMandatory: boolean;
+    wipTaskDefaultedAndDisabled: boolean;
     items: IItem[];
 }

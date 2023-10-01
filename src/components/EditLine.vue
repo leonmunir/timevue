@@ -61,6 +61,8 @@
           return-object
           hide-details
           density="compact"
+          :disabled="taskFieldDisabled"
+          @update:modelValue="taskChanged"
       ></v-autocomplete>
     </td>
     <td class="fieldcell">
@@ -73,7 +75,7 @@
                   name="memo" rows="1"></v-textarea>
     </td>
     <td class="fieldcell">
-      <v-checkbox tabindex="0" id="billable" name="billable" hide-details v-model="timeLineEdit.billable"></v-checkbox>
+      <v-checkbox :disabled="billableFieldDisabled" tabindex="0" id="billable" name="billable" hide-details v-model="timeLineEdit.billable"></v-checkbox>
     </td>
     <TimeBill :timeRecord="timeLineEdit.timebill0"
               :line-index="-1" :hour-index="0" :editMode="true" @pressedenter="save" @updated="updateTimeBill">
@@ -146,6 +148,10 @@ const dataStore = timesheetStore();
 
 //#region Data
 const timeLineEdit = ref(new TimeLineEdit());
+const taskFieldDisabled = ref(false);
+const billableFieldDisabled = ref(false);
+let taskDisabledOnLoad = false;
+let billableDisabledOnLoad = false;
 //#endregion
 
 //#region Emits
@@ -201,10 +207,25 @@ function customerChanged(customer: RecordRef) {
 function feeQuoteChanged(feeQuote: RecordRef) {
   timeLineEdit.value.task = new RecordRef();
   timeLineEdit.value.item = new RecordRef();
+  taskDisabledOnLoad = false;
 }
 
 function itemChanged(item: RecordRef) {
   timeLineEdit.value.task = new RecordRef();
+}
+
+function taskChanged(task: RecordRef) {
+  if(!(task && task.id)){
+    return;
+  }
+
+  const giaTask = listStore.giaTasks.find(t => t.id == task.id);
+  if(!giaTask){
+    return;
+  }
+
+  timeLineEdit.value.billable = giaTask.is_billable;
+  billableFieldDisabled.value = giaTask.lock_billable_field;
 }
 
 function updateTimeBill(eventData: TimeBillUpdateEvent) {
@@ -295,6 +316,10 @@ const itemSelectList = computed(() => {
 });
 
 const taskSelectList = computed(() => {
+  if(taskDisabledOnLoad){
+    return [];
+  }
+
   if (!timeLineEdit.value.feeQuote) {
     return []
   }
@@ -305,16 +330,21 @@ const taskSelectList = computed(() => {
     return []
   }
 
-  const tasks = listStore.giaTasks.filter(x => x.department_id == feeQuote.department_id) as RecordRef[];
-  if (!feeQuote.isWipTaskMandatory) {
+  taskFieldDisabled.value = false;
+  const tasks = listStore.giaTasks.filter(x => x.department_id == feeQuote.department_id);
+  if (feeQuote.wipTaskDefaultedAndDisabled) {
     const notRequiredTask = tasks.find(x => x.name === 'Not Required');
-    if (notRequiredTask && !timeLineEdit.value.task) {
+    if (notRequiredTask && timeLineEdit.value.task.id == 0) {
       timeLineEdit.value.task = new RecordRef();
       timeLineEdit.value.task.id = notRequiredTask.id;
       timeLineEdit.value.task.name = notRequiredTask.name;
+
+      taskFieldDisabled.value = true;
+      timeLineEdit.value.billable = notRequiredTask.is_billable;
+      billableFieldDisabled.value = notRequiredTask.lock_billable_field;
     }
   }
-  return tasks;
+  return tasks as RecordRef[];
 })
 //#endregion
 
@@ -324,14 +354,28 @@ onMounted(() => {
   timeLineEdit.value.id = props.savedTimeLine.id;
   timeLineEdit.value.customer.id = props.savedTimeLine.customer_id;
   timeLineEdit.value.customer.name = props.savedTimeLine.customer_name;
-  timeLineEdit.value.feeQuote.id = props.savedTimeLine.feequote_id;
+  const feeQuoteId = props.savedTimeLine.feequote_id;
+  timeLineEdit.value.feeQuote.id = feeQuoteId;
   timeLineEdit.value.feeQuote.name = props.savedTimeLine.feequote_name;
   timeLineEdit.value.item.id = props.savedTimeLine.item_id;
   timeLineEdit.value.item.name = props.savedTimeLine.item_name;
-  timeLineEdit.value.task.id = props.savedTimeLine.task_id;
+  const TaskId = props.savedTimeLine.task_id;
+  timeLineEdit.value.task.id = TaskId;
   timeLineEdit.value.task.name = props.savedTimeLine.task_name;
   timeLineEdit.value.memo = props.savedTimeLine.memo;
   timeLineEdit.value.billable = props.savedTimeLine.billable;
+
+  const selectedFeeQuote = listStore.feequotes.find(x => x.id == feeQuoteId);
+  if(selectedFeeQuote) {
+    taskFieldDisabled.value = selectedFeeQuote.wipTaskDefaultedAndDisabled;
+    taskDisabledOnLoad = selectedFeeQuote.wipTaskDefaultedAndDisabled;
+  }
+
+  const selectedTask = listStore.giaTasks.find(x => x.id == TaskId);
+  if(selectedTask){
+    billableFieldDisabled.value = selectedTask.lock_billable_field;
+    billableDisabledOnLoad = selectedTask.lock_billable_field;
+  }
 
   for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
     timeLineEdit.value['timebill' + dayIdx] = props.savedTimeLine['timebill' + dayIdx];

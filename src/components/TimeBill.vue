@@ -130,7 +130,7 @@ onMounted(() => {
 }
 
 .locked {
-  background-image: url("https://5331673.app.netsuite.com/core/media/media.nl?id=703970&c=5331673&h=RPjsmjRyyT0VyC8LH5RpMumbwCzyPqYVJilwZZsoj_LNEvnc");
+  background-image: url("/core/media/media.nl?id=703970&c=5331673&h=RPjsmjRyyT0VyC8LH5RpMumbwCzyPqYVJilwZZsoj_LNEvnc");
   background-repeat: no-repeat;
   background-size: 18px;
   font-size: 13px;
